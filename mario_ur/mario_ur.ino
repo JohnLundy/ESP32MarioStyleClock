@@ -9,15 +9,27 @@
 #include "assets.h"
 #include "Gamtex26pt7b.h"
 #include "Gamtex8pt7b.h"
-
+//↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
+//↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓  Custom configurations go here  ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
+//↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
+#define USE_24H 1 // Set to 0 for 12h mode (AM/PM)
+#define USE_DMY 1 // Set to 1 for Europe/Asia/former British colonies D-M-Y date format
+#define USE_MDY 0 // Set to 1 for United States and some parts of the Americas M-D-Y date format
+#define USE_YMD 0 // Set to 1 for East Asia (China, Japan, Korea)/ISO8601 Y-M-D date format
+#define MARIOSPRITESIZE 32 // 32 for 32pixel and 16 for 16pixel sprites - >>>16pixel sprites currently not working<<<
+const char* ssid = "My Wi-Fi Network"; // WiFi credentials (replace with your own)
+const char* password = "PASSWORD";
+const char* ntpServer = "pool.ntp.org"; // Modify the NTP server if needed
+const long gmtOffset_sec = -21600; // Set your timezone offset - Example: USA Central time = UTC-06:00 = (6 hours * 3600) = 21,600 seconds (behind UTC, so negative)
+const int daylightOffset_sec = 0; // Set daylight offset
+//↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑
+//↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑
 #define TFT_BL 3   // Backlight pin
 #define TFT_RST 1  // Reset pin
 #define TFT_CS 10  // Chip select
 #define TFT_DC 2   // Data/command
 #define TFT_SCLK 6 // Clock
 #define TFT_MOSI 7 // Data
-
-#define MARIOSPRITESIZE 32 // 32 for 32pixel and 16 for 16pixel sprites
 
 #define SCREEN_WIDTH 240
 #define SCREEN_HEIGHT 240
@@ -79,16 +91,6 @@ const float DIGIT_GRAVITY = 0.6;
 
 const int DIGIT_X[5] = {50, 80, 108, 135, 165};
 const int TIME_Y = 80;
-
-// ========== Time Settings ==========
-#define USE_24H 1 // Set to 0 for 12h mode
-const char* ntpServer = "pool.ntp.org";
-const long gmtOffset_sec = 3600; // Set your timezone offset
-const int daylightOffset_sec = 0;
-
-// WiFi credentials (replace with your own)
-const char* ssid = "My Wi-Fi Network";
-const char* password = "PASSWORD";
 
 void tryBacklight(bool high) {
   pinMode(TFT_BL, OUTPUT);
@@ -224,7 +226,15 @@ void drawMario(int x, int y, bool facingRight, int frame, bool jumping) {
 void displayClockWithMario(struct tm* timeinfo) {
   // Date at lower third, centered
   char dateStr[12];
+#if USE_DMY  
   sprintf(dateStr, "%02d/%02d/%04d", timeinfo->tm_mday, timeinfo->tm_mon + 1, timeinfo->tm_year + 1900);
+#endif
+#if USE_MDY  
+  sprintf(dateStr, "%02d/%02d/%04d", timeinfo->tm_mon + 1, timeinfo->tm_mday, timeinfo->tm_year + 1900);
+#endif
+#if USE_YMD  
+  sprintf(dateStr, "%04d/%02d/%02d", timeinfo->tm_year + 1900, timeinfo->tm_mon + 1, timeinfo->tm_mday); 
+#endif   
   canvas->setTextColor(WHITE);
   canvas->setFont(&Gamtex8pt7b);
   //canvas->setTextSize(2);
@@ -249,11 +259,11 @@ void drawTimeWithBounce(struct tm* timeinfo) {
   bool isPM = false;
 #if !USE_24H
   isPM = hour >= 12;
-  hour = hour % 12;
+  hour = hour % 12; 
   if (hour == 0) hour = 12;
 #endif
   int min = timeinfo->tm_min;
-  displayed_hour = hour;
+  displayed_hour = hour;  
   displayed_min = min;
 
   // Use displayed_digits for animation
@@ -276,7 +286,7 @@ void drawTimeWithBounce(struct tm* timeinfo) {
   canvas->print(digits);
 #if !USE_24H
   //canvas->setTextSize(2);
-  canvas->setFont(&Gamtex26pt7b);
+  canvas->setFont(&Gamtex8pt7b);  
   canvas->setTextColor(WHITE);
   canvas->setCursor(time_x + w + 10, time_y + 30);
   canvas->print(isPM ? "PM" : "AM");
@@ -318,6 +328,10 @@ void updateMarioAnimation(struct tm* timeinfo) {
   // On first boot, animate Mario to set each digit in sequence
   if (first_boot && mario_state == MARIO_IDLE) {
     int hour = timeinfo->tm_hour;
+    #if !USE_24H
+    hour = hour % 12;
+    if (hour == 0) hour = 12;
+    #endif
     int min = timeinfo->tm_min;
     int correct_digits[4] = {hour / 10, hour % 10, min / 10, min % 10};
     // Build a list of all digits that need to be set
@@ -349,6 +363,10 @@ void updateMarioAnimation(struct tm* timeinfo) {
     animation_triggered = true;
     // Prepare per-digit animation
     int hour = timeinfo->tm_hour;
+    #if !USE_24H
+    hour = hour % 12;
+    if (hour == 0) hour = 12;
+    #endif
     int min = timeinfo->tm_min;
     displayed_digits[0] = hour / 10;
     displayed_digits[1] = hour % 10;
@@ -410,6 +428,10 @@ void updateMarioAnimation(struct tm* timeinfo) {
         if (first_boot) {
           // Set the correct digit for this position
           int hour = timeinfo->tm_hour;
+          #if !USE_24H
+          hour = hour % 12;
+          if (hour == 0) hour = 12;
+          #endif 
           int min = timeinfo->tm_min;
           int correct_digits[4] = {hour / 10, hour % 10, min / 10, min % 10};
           for (int i = 0; i < 4; i++) {
