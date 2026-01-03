@@ -7,16 +7,18 @@
 #include <WiFi.h>
 #include <time.h>
 #include "assets.h"
-#include "Gamtex26pt7b.h"
-#include "Gamtex8pt7b.h"
+#include "Gamtex26pt7b.h" // Time font
+#include "Gamtex10pt7b.h" // AM/PM font
+#include "Gamtex8pt7b.h"  // Date font
 //↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
 //↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓  Custom configurations go here  ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
 //↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
 #define USE_24H 1 // Set to 0 for 12h mode (AM/PM)
+// Select only one of the three date formats below. Select none for no date shown on screen
 #define USE_DMY 1 // Set to 1 for Europe/Asia/former British colonies D-M-Y date format
 #define USE_MDY 0 // Set to 1 for United States and some parts of the Americas M-D-Y date format
 #define USE_YMD 0 // Set to 1 for East Asia (China, Japan, Korea)/ISO8601 Y-M-D date format
-#define MARIOSPRITESIZE 32 // 32 for 32pixel and 16 for 16pixel sprites - >>>16pixel sprites currently not working<<<
+#define MARIOSPRITESIZE 32 // 32 for 32pixel and 16 for 16pixel sprites - >>>16pixel sprites currently not enabled/working<<<
 const char* ssid = "My Wi-Fi Network"; // WiFi credentials (replace with your own)
 const char* password = "PASSWORD";
 const char* ntpServer = "pool.ntp.org"; // Modify the NTP server if needed
@@ -268,11 +270,11 @@ void drawTimeWithBounce(struct tm* timeinfo) {
 
   // Use displayed_digits for animation
   char digits[6];
-  digits[0] = (displayed_digits[0] >= 0 && displayed_digits[0] <= 9) ? ('0' + displayed_digits[0]) : '/';
-  digits[1] = (displayed_digits[1] >= 0 && displayed_digits[1] <= 9) ? ('0' + displayed_digits[1]) : '/';
+  digits[0] = (displayed_digits[0] >= 0 && displayed_digits[0] <= 9) ? ('0' + displayed_digits[0]) : '?';
+  digits[1] = (displayed_digits[1] >= 0 && displayed_digits[1] <= 9) ? ('0' + displayed_digits[1]) : '?';
   digits[2] = ':';
-  digits[3] = (displayed_digits[2] >= 0 && displayed_digits[2] <= 9) ? ('0' + displayed_digits[2]) : '/';
-  digits[4] = (displayed_digits[3] >= 0 && displayed_digits[3] <= 9) ? ('0' + displayed_digits[3]) : '/';
+  digits[3] = (displayed_digits[2] >= 0 && displayed_digits[2] <= 9) ? ('0' + displayed_digits[2]) : '?';
+  digits[4] = (displayed_digits[3] >= 0 && displayed_digits[3] <= 9) ? ('0' + displayed_digits[3]) : '?';
   digits[5] = '\0';
 
   //canvas->setTextSize(5);
@@ -286,9 +288,9 @@ void drawTimeWithBounce(struct tm* timeinfo) {
   canvas->print(digits);
 #if !USE_24H
   //canvas->setTextSize(2);
-  canvas->setFont(&Gamtex8pt7b);  
+  canvas->setFont(&Gamtex10pt7b);  
   canvas->setTextColor(WHITE);
-  canvas->setCursor(time_x + w + 10, time_y + 30);
+  canvas->setCursor(time_x + w + -10, time_y + 25);
   canvas->print(isPM ? "PM" : "AM");
 #endif
 }
